@@ -30,4 +30,21 @@ class User < ApplicationRecord
   def feed_microposts
     Micropost.where(user_id: self.following_ids + [self.id])
   end
+  
+  has_many :favorites, dependent: :destroy
+  has_many :favorite_microposts, through: :favorites, source: :micropost
+  
+  def clip(micropost)
+    self.favorites.find_or_create_by(micropost_id: micropost.id)
+  end
+  
+  def unclip(micropost)
+    favorite = self.favorites.find_by(micropost_id: micropost.id)
+    favorite.destroy if favorite
+  end
+  
+  def clipping?(micropost)
+    self.favorite_microposts.include?(micropost)
+  end
+
 end
